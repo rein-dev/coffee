@@ -19,21 +19,42 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
     }
+    int numberOfCoffees = 0;
 
     /**
      * This method is called when the order button is clicked.
      */
     public void submitOrder(View view) {
-        display(2);
-        displayPrice(2 * 5);
+        if (numberOfCoffees == 0){
+            String message = "Please place an order";
+            displayMessage(message);
+        }
+        else{
+            String priceMessage = "Your bill comes to R" + numberOfCoffees * 21;
+            displayMessage(priceMessage);
+        }
+
+    }
+
+    public void increment(View view){
+        numberOfCoffees++;
+        display(numberOfCoffees);
+    }
+
+    public void decrement(View view){
+        numberOfCoffees--;
+        if(numberOfCoffees <= 0){
+            numberOfCoffees = 0;
+        }
+        display(numberOfCoffees);
     }
 
     /**
      * This method displays the given quantity value on the screen.
      */
-    private void display(int x) {
+    private void display(int number) {
         TextView quantityTextView = (TextView) findViewById(R.id.quantity_text_view);
-        quantityTextView.setText("" + x);
+        quantityTextView.setText("" + number);
     }
     /**
      * This method displays the given price on the screen.
@@ -41,6 +62,14 @@ public class MainActivity extends AppCompatActivity {
     private void displayPrice(int number) {
         TextView priceTextView = (TextView) findViewById(R.id.price_text_view);
         priceTextView.setText(NumberFormat.getCurrencyInstance().format(number));
+    }
+
+    /**
+     * This method displays the given text on the screen.
+     */
+    private void displayMessage(String message) {
+        TextView priceTextView = (TextView) findViewById(R.id.price_text_view);
+        priceTextView.setText(message);
     }
 }
 
@@ -59,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
     tools:context=".MainActivity"
     >
 
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -67,18 +97,44 @@ public class MainActivity extends AppCompatActivity {
         android:textAllCaps="true"
         />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="0"
-        android:id="@+id/quantity_text_view"
-        android:layout_marginBottom="16dp"
-        />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+
+
+            <Button
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:text="-"
+                android:onClick="decrement"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:id="@+id/quantity_text_view"
+                android:layout_marginBottom="16dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+            />
+
+            <Button
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:text="+"
+                android:onClick="increment"
+                />
+
+         </LinearLayout>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Price"
+        android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp"
         />
 
