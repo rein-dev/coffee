@@ -3,15 +3,20 @@
 package com.example.justjava;
 
 
-import java.text.NumberFormat;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
-import android.view.View;
-import android.widget.TextView;
 
-/**
- * This app displays an order form to order coffee.
- */
+import android.text.Editable;
+import android.util.Log;
+import android.view.View;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -19,138 +24,173 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
     }
-    int numberOfCoffees = 0;
 
-    /**
-     * This method is called when the order button is clicked.
-     */
+    int quantity = 0;
+
+    public void increment(View view) {
+        if (quantity == 100) {
+            return;
+        }
+        quantity = quantity + 1;
+        displayQuantity(quantity);
+    }
+
+
+    public void decrement(View view) {
+        if (quantity == 0) {
+            return;
+        }
+        quantity = quantity - 1;
+        displayQuantity(quantity);
+    }
+
+
     public void submitOrder(View view) {
-        if (numberOfCoffees == 0){
-            String message = "Please place an order";
-            displayMessage(message);
-        }
-        else{
-            String priceMessage = "Your bill comes to R" + numberOfCoffees * 21;
-            displayMessage(priceMessage);
-        }
 
+        EditText nameField = (EditText) findViewById(R.id.name_field);
+        Editable nameEditable = nameField.getText();
+        String name = nameEditable.toString();
+
+        CheckBox whippedCreamCheckBox = (CheckBox) findViewById(R.id.whipped_cream_checkbox);
+        boolean hasWhippedCream = whippedCreamCheckBox.isChecked();
+
+        CheckBox chocolateCheckBox = (CheckBox) findViewById(R.id.chocolate_checkbox);
+        boolean hasChocolate = chocolateCheckBox.isChecked();
+
+        int price = calculatePrice(hasWhippedCream, hasChocolate);
+
+        String message = createOrderSummary(name, price, hasWhippedCream, hasChocolate);
+
+        Intent intent = new Intent(Intent.ACTION_SENDTO);
+        intent.setData(Uri.parse("mailto:")); // only email apps should handle this
+        intent.putExtra(Intent.EXTRA_SUBJECT, "Coffee order for " + name);
+        intent.putExtra(Intent.EXTRA_TEXT, message);
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        }
     }
 
-    public void increment(View view){
-        numberOfCoffees++;
-        display(numberOfCoffees);
-    }
 
-    public void decrement(View view){
-        numberOfCoffees--;
-        if(numberOfCoffees <= 0){
-            numberOfCoffees = 0;
+    private int calculatePrice(boolean addWhippedCream, boolean addChocolate) {
+        int basePrice = 21;
+
+        if (addWhippedCream) {
+            basePrice = basePrice + 5;
         }
-        display(numberOfCoffees);
+
+        if (addChocolate) {
+            basePrice = basePrice + 7;
+        }
+        return quantity * basePrice;
     }
 
-    /**
-     * This method displays the given quantity value on the screen.
-     */
-    private void display(int number) {
+    private String createOrderSummary(String name, int price, boolean addWhippedCream, boolean addChocolate) {
+        String priceMessage = "Name: "+ name;
+        priceMessage += "\nWhipped cream added? " + addWhippedCream;
+        priceMessage += "\nChocolate added? " + addChocolate;
+        priceMessage += "\nNumber of coffees ordered: " + quantity;
+        priceMessage += "\nPrice: R" + price;
+        priceMessage += "\nThank You";
+        return priceMessage;
+    }
+
+    private void displayQuantity(int numberOfCoffees) {
         TextView quantityTextView = (TextView) findViewById(R.id.quantity_text_view);
-        quantityTextView.setText("" + number);
-    }
-    /**
-     * This method displays the given price on the screen.
-     */
-    private void displayPrice(int number) {
-        TextView priceTextView = (TextView) findViewById(R.id.price_text_view);
-        priceTextView.setText(NumberFormat.getCurrencyInstance().format(number));
-    }
-
-    /**
-     * This method displays the given text on the screen.
-     */
-    private void displayMessage(String message) {
-        TextView priceTextView = (TextView) findViewById(R.id.price_text_view);
-        priceTextView.setText(message);
+        quantityTextView.setText("" + numberOfCoffees);
     }
 }
 
------------------------------------------------------------------------------------
+
+----------------------------------------------------------------------------------------------------------------------
 
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:paddingBottom="16dp"
-    android:paddingTop="16dp"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
-    tools:context=".MainActivity"
-    >
+    tools:context=".MainActivity">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingBottom="16dp"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:paddingTop="16dp">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Quantity"
-        android:layout_marginBottom="16dp"
-        android:textAllCaps="true"
-        />
+        <EditText
+            android:id="@+id/name_field"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="name"
+            android:inputType="text"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:text="Toppings"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            />
+
+        <CheckBox
+            android:id="@+id/whipped_cream_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="24dp"
+            android:text="whipped cream"
+            android:textSize="16sp" />
+
+        <CheckBox
+            android:id="@+id/chocolate_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="24dp"
+            android:text="chocolate"
+            android:textSize="16sp" />
+
+        <TextView
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:text="Quantity" />
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-
-
             <Button
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:text="-"
                 android:onClick="decrement"
-                />
+                android:text="-" />
 
             <TextView
+                android:id="@+id/quantity_text_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
                 android:text="0"
-                android:id="@+id/quantity_text_view"
-                android:layout_marginBottom="16dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-            />
+                android:textColor="@android:color/black"
+                android:textSize="16sp" />
 
             <Button
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:text="+"
                 android:onClick="increment"
-                />
+                android:text="+" />
 
-         </LinearLayout>
+        </LinearLayout>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Price"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"
-        />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:onClick="submitOrder"
+            android:text="Order" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/price_text_view"
-        android:text="0"
-        />
+    </LinearLayout>
+</ScrollView>
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="order"
-        android:layout_marginTop="16dp"
-        android:onClick="submitOrder"
-        />
 
-</LinearLayout>
